@@ -4,6 +4,29 @@ include 'db.php';
 
 $msg = "";
 
+// Tạo admin nếu chưa có
+$admin_username = "admin";
+$admin_password_plain = "admin123";
+$admin_role = "admin";
+
+// Kiểm tra admin đã tồn tại chưa
+$stmt = $conn->prepare("SELECT * FROM Users WHERE username=?");
+$stmt->bind_param("s", $admin_username);
+$stmt->execute();
+$result = $stmt->get_result();
+$admin = $result->fetch_assoc();
+$stmt->close();
+
+if (!$admin) {
+    $hash = password_hash($admin_password_plain, PASSWORD_DEFAULT);
+    $stmt = $conn->prepare("INSERT INTO Users (username, password, role) VALUES (?, ?, ?)");
+    $stmt->bind_param("sss", $admin_username, $hash, $admin_role);
+    $stmt->execute();
+    $stmt->close();
+    // echo "Admin đã được tạo!";
+}
+
+// Xử lý login
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $username = trim($_POST['username']);
     $password = $_POST['password'];
@@ -16,19 +39,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $stmt->close();
 
     if ($user && password_verify($password, $user['password'])) {
-        // Lưu session
         $_SESSION['user'] = [
-            "id"=>$user['id'],
-            "username"=>$user['username'],
-            "role"=>$user['role']
+            "id" => $user['id'],
+            "username" => $user['username'],
+            "role" => strtolower(trim($user['role']))
         ];
-        header("Location: index.php");
+
+        // Redirect dựa role
+        if ($_SESSION['user']['role'] === 'admin') {
+            header("Location: admin.php");
+        } else {
+            header("Location: index.php");
+        }
         exit;
     } else {
         $msg = "❌ Sai tên đăng nhập hoặc mật khẩu!";
     }
 }
 ?>
+
 <!DOCTYPE html>
 <html lang="vi">
 <head>

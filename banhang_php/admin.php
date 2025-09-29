@@ -1,5 +1,13 @@
 <?php
+session_start();
 include 'db.php';
+
+// Kiểm tra session admin
+if (!isset($_SESSION['user']) || strtolower(trim($_SESSION['user']['role'])) !== 'admin') {
+    header("Location: index.php"); // nếu không phải admin thì về trang user
+    exit;
+}
+
 $result = $conn->query("SELECT * FROM DienThoai");
 ?>
 <!DOCTYPE html>
@@ -22,7 +30,9 @@ $result = $conn->query("SELECT * FROM DienThoai");
 </head>
 <body>
 
-<h2>📋 Quản lý sản phẩm</h2>
+<h2>📋 Quản lý sản phẩm (Admin)</h2>
+
+<p>Xin chào, <b><?= htmlspecialchars($_SESSION['user']['username']) ?></b> | <a href="logout.php">Đăng xuất</a></p>
 
 <?php if (isset($_GET['msg']) && $_GET['msg'] == 'deleted'): ?>
     <p style="color: green;">✅ Sản phẩm đã được xóa thành công!</p>
