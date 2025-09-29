@@ -8,6 +8,16 @@ $result = $conn->query($sql);
 <!DOCTYPE html>
 <html>
 <head>
+    <?php if(isset($_SESSION['user'])): ?>
+    Xin chào, <b><?= $_SESSION['user']['username'] ?></b> |
+    <a href="logout.php">Đăng xuất</a>
+    <?php if($_SESSION['user']['role'] === 'admin'): ?>
+        | <a href="admin.php">Quản lý sản phẩm</a>
+    <?php endif; ?>
+<?php else: ?>
+    <a href="login.php">Đăng nhập</a> | 
+    <a href="register.php">Đăng ký</a>
+<?php endif; ?>
     <meta charset="UTF-8">
     <title>Cửa hàng điện thoại</title>
     <style>
